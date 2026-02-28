@@ -1,140 +1,422 @@
 
-Simulador academico · HTML
-Copiar
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador – Sistema Gestión Académica</title>
+<title>Simulador – Gestión Académica Java</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
+/* ─── RESET ─────────────────────────────────────────── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
 :root {
-  --bg:#060810; --panel:#0c1020; --panel2:#111828;
-  --cyan:#00ffe7; --green:#39ff14; --yellow:#ffe000;
-  --red:#ff3d6b; --purple:#bf7fff; --orange:#ff9500;
-  --dim:#1e2d48; --text:#c8d8f0; --muted:#3a4a6a;
+  --bg:      #060810;
+  --panel:   #0c1020;
+  --panel2:  #111828;
+  --border:  #1e2d48;
+  --cyan:    #00ffe7;
+  --green:   #39ff14;
+  --yellow:  #ffe000;
+  --red:     #ff3d6b;
+  --purple:  #bf7fff;
+  --orange:  #ff9500;
+  --text:    #c8d8f0;
+  --muted:   #3a4a6a;
+  --nav-w:   220px;
+  --right-w: 290px;
 }
-body { background:var(--bg); color:var(--text); font-family:'JetBrains Mono',monospace; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
-body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px); pointer-events:none; z-index:999; }
 
-/* TOPBAR */
-.topbar { display:flex; align-items:center; justify-content:space-between; padding:10px 24px; border-bottom:1px solid var(--dim); background:var(--panel); flex-shrink:0; }
-.topbar-title { font-family:'Bebas Neue',cursive; font-size:1.3rem; letter-spacing:4px; color:var(--cyan); text-shadow:0 0 20px rgba(0,255,231,0.5); }
-.topbar-right { display:flex; align-items:center; gap:16px; font-size:0.65rem; letter-spacing:2px; color:var(--muted); }
-.file-badge { padding:4px 14px; border:1px solid var(--dim); border-radius:2px; color:var(--cyan); font-size:0.68rem; min-width:200px; text-align:center; transition:all 0.3s; }
-.authors { font-size:0.56rem; color:var(--muted); letter-spacing:1px; }
+html, body { height:100%; }
 
-/* LAYOUT */
-.layout { display:grid; grid-template-columns:240px 1fr 300px; flex:1; overflow:hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
-/* LEFT NAV */
-.nav-panel { background:var(--panel); border-right:1px solid var(--dim); display:flex; flex-direction:column; overflow:hidden; }
-.pheader { padding:10px 16px; border-bottom:1px solid var(--dim); font-size:0.58rem; letter-spacing:3px; color:var(--muted); text-transform:uppercase; background:var(--panel); display:flex; align-items:center; gap:8px; flex-shrink:0; }
-.dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-.dc{background:var(--cyan);box-shadow:0 0 6px var(--cyan);}
-.dg{background:var(--green);box-shadow:0 0 6px var(--green);}
-.dy{background:var(--yellow);box-shadow:0 0 6px var(--yellow);}
-.dp{background:var(--purple);box-shadow:0 0 6px var(--purple);}
+/* scanlines */
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);
+  pointer-events:none; z-index:9999;
+}
 
-.nav-items { overflow-y:auto; flex:1; scrollbar-width:thin; scrollbar-color:var(--dim) transparent; }
-.nav-item { padding:11px 14px; border-bottom:1px solid rgba(255,255,255,0.025); cursor:pointer; transition:all 0.2s; border-left:3px solid transparent; display:flex; align-items:flex-start; gap:10px; user-select:none; }
-.nav-item:hover { background:rgba(0,255,231,0.04); border-left-color:rgba(0,255,231,0.3); }
-.nav-item.active { background:rgba(0,255,231,0.07); border-left-color:var(--cyan); }
-.n-num { width:22px; height:22px; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:0.58rem; font-weight:800; flex-shrink:0; margin-top:2px; }
-.nav-item.active .n-num { background:rgba(0,255,231,0.2); color:var(--cyan); border:1px solid rgba(0,255,231,0.5); }
-.nav-item:not(.active) .n-num { background:var(--dim); color:var(--muted); }
-.n-lbl { font-size:0.68rem; font-weight:700; color:var(--text); line-height:1.3; }
+/* ─── TOPBAR ─────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.top-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: clamp(1rem, 3vw, 1.35rem);
+  letter-spacing: 4px;
+  color: var(--cyan);
+  text-shadow: 0 0 20px rgba(0,255,231,0.4);
+  white-space: nowrap;
+}
+.top-right { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.file-badge {
+  padding: 4px 14px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--cyan);
+  font-size: clamp(0.55rem, 1.5vw, 0.68rem);
+  min-width: 140px;
+  text-align: center;
+  transition: all .3s;
+  white-space: nowrap;
+}
+.authors {
+  font-size: clamp(0.5rem, 1.2vw, 0.58rem);
+  color: var(--muted);
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* ─── MAIN LAYOUT ────────────────────────────────────── */
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ─── LEFT NAV ───────────────────────────────────────── */
+.nav-panel {
+  width: var(--nav-w);
+  flex-shrink: 0;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform .3s, width .3s;
+}
+.nav-items {
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.nav-item {
+  padding: 11px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.025);
+  cursor: pointer;
+  transition: all .2s;
+  border-left: 3px solid transparent;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  user-select: none;
+}
+.nav-item:hover  { background:rgba(0,255,231,0.04); border-left-color:rgba(0,255,231,0.3); }
+.nav-item.active { background:rgba(0,255,231,0.08); border-left-color:var(--cyan); }
+.n-num {
+  width:22px; height:22px;
+  border-radius:2px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.6rem; font-weight:800; flex-shrink:0; margin-top:2px;
+}
+.nav-item.active  .n-num { background:rgba(0,255,231,0.2); color:var(--cyan); border:1px solid rgba(0,255,231,0.5); }
+.nav-item:not(.active) .n-num { background:var(--border); color:var(--muted); }
+.n-lbl { font-size:.68rem; font-weight:700; color:var(--text); line-height:1.3; }
 .nav-item.active .n-lbl { color:var(--cyan); }
-.n-sub { font-size:0.56rem; color:var(--muted); margin-top:2px; }
-.n-tag { display:inline-block; font-size:0.5rem; padding:2px 6px; border-radius:2px; margin-top:4px; letter-spacing:1px; font-weight:700; }
-.t-abs{background:rgba(191,127,255,0.15);color:var(--purple);border:1px solid rgba(191,127,255,0.3);}
-.t-her{background:rgba(191,127,255,0.1);color:#c792ea;border:1px solid rgba(191,127,255,0.2);}
-.t-int{background:rgba(0,255,231,0.08);color:var(--cyan);border:1px solid rgba(0,255,231,0.25);}
-.t-com{background:rgba(255,61,107,0.1);color:var(--red);border:1px solid rgba(255,61,107,0.25);}
-.t-agr{background:rgba(126,207,255,0.08);color:#7ecfff;border:1px solid rgba(126,207,255,0.2);}
-.t-dep{background:rgba(255,149,0,0.1);color:var(--orange);border:1px solid rgba(255,149,0,0.25);}
-.t-pol{background:rgba(255,224,0,0.1);color:var(--yellow);border:1px solid rgba(255,224,0,0.25);}
-.t-mai{background:rgba(57,255,20,0.08);color:var(--green);border:1px solid rgba(57,255,20,0.2);}
+.n-sub { font-size:.55rem; color:var(--muted); margin-top:2px; }
+.n-tag {
+  display:inline-block; font-size:.5rem;
+  padding:2px 6px; border-radius:2px;
+  margin-top:4px; letter-spacing:1px; font-weight:700;
+}
+.t-abs { background:rgba(191,127,255,.15); color:var(--purple); border:1px solid rgba(191,127,255,.3); }
+.t-her { background:rgba(191,127,255,.1);  color:#c792ea;       border:1px solid rgba(191,127,255,.2); }
+.t-int { background:rgba(0,255,231,.08);   color:var(--cyan);   border:1px solid rgba(0,255,231,.25); }
+.t-com { background:rgba(255,61,107,.1);   color:var(--red);    border:1px solid rgba(255,61,107,.25); }
+.t-agr { background:rgba(126,207,255,.08); color:#7ecfff;       border:1px solid rgba(126,207,255,.2); }
+.t-dep { background:rgba(255,149,0,.1);    color:var(--orange); border:1px solid rgba(255,149,0,.25); }
+.t-mai { background:rgba(57,255,20,.08);   color:var(--green);  border:1px solid rgba(57,255,20,.2); }
 
-/* CODE PANEL */
-.code-panel { background:#070a12; border-right:1px solid var(--dim); display:flex; flex-direction:column; overflow:hidden; }
-.phdr2 { padding:10px 16px; border-bottom:1px solid var(--dim); font-size:0.58rem; letter-spacing:3px; color:var(--muted); text-transform:uppercase; background:var(--panel); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
-.code-scroll { flex:1; overflow:auto; padding:20px 26px; scrollbar-width:thin; scrollbar-color:var(--dim) transparent; }
-.code-content { font-size:0.77rem; line-height:1.9; white-space:pre; animation:fadeCode 0.3s ease; }
-@keyframes fadeCode{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* ─── CODE CENTER ────────────────────────────────────── */
+.code-panel {
+  flex: 1;
+  background: #070a12;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+.code-scroll {
+  flex:1; overflow:auto; padding: 20px 24px;
+  scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+}
+.code-content {
+  font-size: clamp(.68rem, 1.5vw, .78rem);
+  line-height: 1.9;
+  white-space: pre;
+  animation: fadeCode .3s ease;
+  min-width: max-content;
+}
+@keyframes fadeCode { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
 
 /* syntax */
-.kw{color:#ff79c6}.cl{color:#8be9fd}.fn{color:#50fa7b}.st{color:#f1fa8c}.cm{color:#44607a;font-style:italic}.nm{color:#ffb86c}.iface{color:#00ffe7}.abs{color:#bf7fff}
+.kw  { color:#ff79c6; }
+.cl  { color:#8be9fd; }
+.fn  { color:#50fa7b; }
+.st  { color:#f1fa8c; }
+.cm  { color:#44607a; font-style:italic; }
+.nm  { color:#ffb86c; }
+.iface { color:#00ffe7; }
+.abs   { color:#bf7fff; }
 
-/* RIGHT */
-.right-col { display:flex; flex-direction:column; background:var(--panel); overflow:hidden; }
+/* ─── RIGHT PANEL ────────────────────────────────────── */
+.right-col {
+  width: var(--right-w);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  overflow: hidden;
+  transition: width .3s;
+}
 
-.concept-box { flex-shrink:0; border-bottom:1px solid var(--dim); padding:14px 16px; }
-.c-lbl { font-size:0.56rem; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin-bottom:8px; }
-.c-name { font-family:'Bebas Neue',cursive; font-size:1.55rem; letter-spacing:4px; color:var(--cyan); text-shadow:0 0 16px rgba(0,255,231,0.5); line-height:1; }
-.c-desc { font-size:0.67rem; color:var(--muted); margin-top:8px; line-height:1.65; }
+/* concept */
+.concept-box {
+  flex-shrink:0;
+  border-bottom:1px solid var(--border);
+  padding:14px 16px;
+}
+.c-lbl  { font-size:.55rem; letter-spacing:3px; color:var(--muted); text-transform:uppercase; margin-bottom:7px; }
+.c-name {
+  font-family:'Bebas Neue',cursive;
+  font-size: clamp(1.2rem, 2.5vw, 1.55rem);
+  letter-spacing:4px; color:var(--cyan);
+  text-shadow:0 0 16px rgba(0,255,231,.5); line-height:1;
+}
+.c-desc { font-size:.65rem; color:var(--muted); margin-top:8px; line-height:1.65; }
 
-.obj-section { flex-shrink:0; border-bottom:1px solid var(--dim); }
-.obj-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; padding:9px; }
-.obj-card { background:var(--panel2); border:1px solid var(--dim); border-radius:3px; padding:7px 9px; font-size:0.57rem; opacity:0.2; transition:all 0.35s; }
-.obj-card.alive { opacity:1; border-color:rgba(0,255,231,0.22); }
-.obj-card.anim  { border-color:var(--cyan); background:rgba(0,255,231,0.07); box-shadow:0 0 10px rgba(0,255,231,0.2); animation:pop 0.45s ease; }
-@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
-.o-type{color:var(--purple);font-weight:700;font-size:0.53rem;letter-spacing:1px;margin-bottom:2px;}
-.o-name{color:var(--cyan);font-weight:800;font-size:0.6rem;}
-.o-attr{color:var(--muted);font-size:0.54rem;margin-top:2px;line-height:1.5;}
-.o-attr span{color:var(--text);}
+/* objects */
+.obj-section  { flex-shrink:0; border-bottom:1px solid var(--border); }
+.obj-grid     { display:grid; grid-template-columns:1fr 1fr; gap:7px; padding:9px; }
+.obj-card     { background:var(--panel2); border:1px solid var(--border); border-radius:3px; padding:7px 9px; font-size:.55rem; opacity:.18; transition:all .35s; }
+.obj-card.alive { opacity:1; border-color:rgba(0,255,231,.22); }
+.obj-card.anim  { border-color:var(--cyan); background:rgba(0,255,231,.07); box-shadow:0 0 10px rgba(0,255,231,.2); animation:pop .45s ease; }
+@keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.04)} 100%{transform:scale(1)} }
+.o-type { color:var(--purple); font-weight:700; font-size:.52rem; letter-spacing:1px; margin-bottom:2px; }
+.o-name { color:var(--cyan); font-weight:800; font-size:.6rem; }
+.o-attr { color:var(--muted); font-size:.53rem; margin-top:2px; line-height:1.5; }
+.o-attr span { color:var(--text); }
 
-.out-section { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-.out-hdr { display:flex; align-items:center; justify-content:space-between; }
-.out-lines { flex:1; overflow-y:auto; padding:9px 14px; scrollbar-width:thin; scrollbar-color:var(--dim) transparent; }
-.out-line { font-size:0.64rem; line-height:1.8; color:var(--green); opacity:0; transform:translateX(-5px); transition:all 0.22s; }
-.out-line.show{opacity:1;transform:none;}
-.out-line.hdr{color:var(--cyan);font-weight:700;}
-.out-line.inf{color:var(--yellow);}
-.out-line.sys{color:var(--purple);}
-.btn-clr { font-family:'JetBrains Mono',monospace; font-size:0.54rem; letter-spacing:1px; padding:3px 10px; border-radius:2px; border:1px solid var(--dim); color:var(--muted); background:none; cursor:pointer; transition:all 0.2s; }
-.btn-clr:hover{border-color:var(--red);color:var(--red);}
+/* ─── PANEL HEADER (shared) ──────────────────────────── */
+.ph {
+  padding:9px 14px;
+  border-bottom:1px solid var(--border);
+  font-size:.57rem; letter-spacing:3px; color:var(--muted);
+  text-transform:uppercase; background:var(--panel);
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0;
+}
+.ph-left { display:flex; align-items:center; gap:8px; }
+.dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.dc  { background:var(--cyan);   box-shadow:0 0 6px var(--cyan); }
+.dg  { background:var(--green);  box-shadow:0 0 6px var(--green); }
+.dy  { background:var(--yellow); box-shadow:0 0 6px var(--yellow); }
+.dp  { background:var(--purple); box-shadow:0 0 6px var(--purple); }
 
-.bot-nav { display:flex; align-items:center; justify-content:space-between; padding:8px 18px; border-top:1px solid var(--dim); background:var(--panel); flex-shrink:0; }
-.nav-btn { font-family:'JetBrains Mono',monospace; font-size:0.6rem; letter-spacing:2px; padding:6px 18px; border-radius:2px; border:1px solid; cursor:pointer; transition:all 0.2s; text-transform:uppercase; background:none; }
-.btn-prev{border-color:var(--dim);color:var(--muted);}
-.btn-prev:hover{border-color:var(--muted);color:var(--text);}
-.btn-next{border-color:var(--cyan);color:var(--cyan);background:rgba(0,255,231,0.06);}
-.btn-next:hover{background:rgba(0,255,231,0.14);}
-.scount{font-size:0.6rem;color:var(--muted);letter-spacing:2px;}
+/* ─── BOTTOM NAV ─────────────────────────────────────── */
+.bot-nav {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:8px 16px;
+  border-top:1px solid var(--border);
+  background:var(--panel);
+  flex-shrink:0;
+  gap:8px;
+  flex-wrap: wrap;
+}
+.bot-left, .bot-right { display:flex; align-items:center; gap:8px; }
+.nav-btn {
+  font-family:'JetBrains Mono',monospace;
+  font-size: clamp(.55rem,1.3vw,.62rem);
+  letter-spacing:2px; padding:7px 16px;
+  border-radius:2px; border:1px solid;
+  cursor:pointer; transition:all .2s;
+  text-transform:uppercase; background:none;
+  white-space:nowrap;
+}
+.btn-prev { border-color:var(--border); color:var(--muted); }
+.btn-prev:hover { border-color:var(--muted); color:var(--text); }
+.btn-next { border-color:var(--cyan); color:var(--cyan); background:rgba(0,255,231,.06); }
+.btn-next:hover { background:rgba(0,255,231,.15); }
+.btn-term {
+  border-color:var(--yellow);
+  color:var(--yellow);
+  background:rgba(255,224,0,.07);
+}
+.btn-term:hover { background:rgba(255,224,0,.16); }
+.btn-menu {
+  border-color:var(--border);
+  color:var(--muted);
+  display:none;
+}
+.btn-menu:hover { border-color:var(--muted); color:var(--text); }
+.s-count { font-size:.6rem; color:var(--muted); letter-spacing:2px; white-space:nowrap; }
+
+/* ─── TERMINAL MODAL ─────────────────────────────────── */
+.modal-overlay {
+  position:fixed; inset:0;
+  background:rgba(6,8,16,.88);
+  backdrop-filter:blur(6px);
+  z-index:1000;
+  display:flex; align-items:center; justify-content:center;
+  padding:20px;
+  opacity:0; pointer-events:none;
+  transition:opacity .25s;
+}
+.modal-overlay.open { opacity:1; pointer-events:all; }
+
+.terminal {
+  width:100%; max-width:720px;
+  max-height:85vh;
+  background:#040710;
+  border:1px solid var(--yellow);
+  border-radius:6px;
+  box-shadow:0 0 60px rgba(255,224,0,.2), 0 0 120px rgba(0,0,0,.8);
+  display:flex; flex-direction:column;
+  animation:termIn .25s ease;
+  overflow:hidden;
+}
+@keyframes termIn { from{transform:scale(.95);opacity:0} to{transform:scale(1);opacity:1} }
+
+.term-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 18px;
+  background:#070b14;
+  border-bottom:1px solid rgba(255,224,0,.2);
+  flex-shrink:0;
+}
+.term-title {
+  font-family:'Bebas Neue',cursive;
+  font-size:1.1rem; letter-spacing:4px; color:var(--yellow);
+  text-shadow:0 0 12px rgba(255,224,0,.4);
+}
+.term-controls { display:flex; gap:8px; align-items:center; }
+.term-btn {
+  font-family:'JetBrains Mono',monospace;
+  font-size:.58rem; letter-spacing:2px;
+  padding:4px 12px; border-radius:2px; border:1px solid;
+  cursor:pointer; background:none;
+  transition:all .2s; text-transform:uppercase;
+}
+.tbtn-all   { border-color:var(--green);  color:var(--green);  }
+.tbtn-all:hover  { background:rgba(57,255,20,.1); }
+.tbtn-close { border-color:var(--red);    color:var(--red);    }
+.tbtn-close:hover { background:rgba(255,61,107,.1); }
+
+.term-body {
+  flex:1; overflow-y:auto; padding:20px 22px;
+  scrollbar-width:thin; scrollbar-color:var(--border) transparent;
+}
+.term-line {
+  font-size: clamp(.7rem, 1.8vw, .78rem);
+  line-height:1.95;
+  color:var(--green);
+  opacity:0; transform:translateX(-4px);
+  transition:all .18s;
+}
+.term-line.show   { opacity:1; transform:none; }
+.term-line.hdr    { color:var(--cyan);   font-weight:700; margin-top:8px; }
+.term-line.inf    { color:var(--yellow); }
+.term-line.sys    { color:var(--purple); }
+.term-line.dim    { color:var(--muted);  font-style:italic; }
+.term-line.empty  { height:10px; opacity:1; }
+
+.term-prompt { color:var(--muted); margin-right:8px; user-select:none; }
+
+/* ─── MOBILE SIDE DRAWER ─────────────────────────────── */
+.drawer-overlay {
+  display:none;
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.6);
+  z-index:500;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────── */
+
+/* tablets: hide right panel details partially */
+@media (max-width: 1100px) {
+  :root { --right-w: 250px; }
+}
+
+/* small tablets / large phones */
+@media (max-width: 860px) {
+  .right-col { display:none; }
+  .nav-panel { 
+    position:fixed; top:0; left:0; bottom:0;
+    z-index:600; width:260px;
+    transform:translateX(-100%);
+    border-right:1px solid var(--border);
+    box-shadow:4px 0 30px rgba(0,0,0,.8);
+  }
+  .nav-panel.open { transform:translateX(0); }
+  .btn-menu { display:block; }
+  .drawer-overlay { display:block; opacity:0; pointer-events:none; transition:opacity .25s; }
+  .drawer-overlay.open { opacity:1; pointer-events:all; }
+  .topbar { padding:8px 14px; }
+  .authors { display:none; }
+}
+
+@media (max-width: 540px) {
+  .top-title { font-size:.9rem; letter-spacing:2px; }
+  .file-badge { min-width:unset; font-size:.58rem; }
+  .nav-btn { padding:6px 10px; font-size:.55rem; letter-spacing:1px; }
+  .code-scroll { padding:14px; }
+}
 </style>
 </head>
 <body>
 
+<!-- TOPBAR -->
 <div class="topbar">
-  <div class="topbar-title">JAVA SIMULATOR · GESTIÓN ACADÉMICA</div>
-  <div class="topbar-right">
+  <div class="top-title">JAVA SIMULATOR · GESTIÓN ACADÉMICA</div>
+  <div class="top-right">
     <div class="file-badge" id="fileLabel">— selecciona una clase —</div>
     <div class="authors">Colimba &nbsp;·&nbsp; Fierro &nbsp;·&nbsp; Guacales</div>
   </div>
 </div>
 
-<div class="layout">
+<!-- DRAWER OVERLAY (mobile) -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeNav()"></div>
 
-  <!-- LEFT -->
-  <div class="nav-panel">
-    <div class="pheader"><div class="dot dc"></div>CLASES DEL SISTEMA</div>
+<!-- APP BODY -->
+<div class="app-body">
+
+  <!-- LEFT NAV -->
+  <nav class="nav-panel" id="navPanel">
+    <div class="ph"><div class="ph-left"><div class="dot dc"></div>CLASES DEL SISTEMA</div></div>
     <div class="nav-items" id="navItems"></div>
-  </div>
+  </nav>
 
-  <!-- CODE -->
+  <!-- CODE CENTER -->
   <div class="code-panel">
-    <div class="phdr2">
-      <div style="display:flex;align-items:center;gap:8px"><div class="dot dg"></div><span id="panelFile" style="color:var(--cyan)">—</span></div>
+    <div class="ph">
+      <div class="ph-left"><div class="dot dg"></div><span id="panelFile" style="color:var(--cyan)">—</span></div>
     </div>
-    <div class="code-scroll"><div class="code-content" id="codeDisplay">
-<span style="color:var(--muted);font-size:0.8rem">// Haz clic en una clase del panel izquierdo
-// para ver su código completo aquí.</span>
-    </div></div>
+    <div class="code-scroll">
+      <div class="code-content" id="codeDisplay"><span style="color:var(--muted)">// Haz clic en una clase del panel izquierdo
+// para ver su código completo.</span></div>
+    </div>
   </div>
 
   <!-- RIGHT -->
@@ -142,45 +424,82 @@ body::after { content:''; position:fixed; inset:0; background:repeating-linear-g
     <div class="concept-box">
       <div class="c-lbl">CONCEPTO OOP</div>
       <div class="c-name" id="cName">SISTEMA</div>
-      <div class="c-desc" id="cDesc">Selecciona una clase para ver el concepto OOP que aplica y su explicación.</div>
+      <div class="c-desc" id="cDesc">Selecciona una clase para ver el concepto OOP y su explicación.</div>
     </div>
     <div class="obj-section">
-      <div class="pheader" style="border-top:none"><div class="dot dp"></div>OBJETOS EN MEMORIA</div>
+      <div class="ph" style="border-top:none"><div class="ph-left"><div class="dot dp"></div>OBJETOS EN MEMORIA</div></div>
       <div class="obj-grid" id="objGrid"></div>
     </div>
-    <div class="out-section">
-      <div class="pheader out-hdr"><div style="display:flex;align-items:center;gap:8px"><div class="dot dy"></div>CONSOLA</div><button class="btn-clr" onclick="clearOut()">✕ limpiar</button></div>
-      <div class="out-lines" id="outLines"></div>
+    <!-- mini output in right panel (hidden behind button) -->
+    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+      <div class="ph"><div class="ph-left"><div class="dot dy"></div>VISTA RÁPIDA CONSOLA</div></div>
+      <div id="miniOut" style="flex:1;overflow-y:auto;padding:8px 12px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;font-size:.6rem;line-height:1.8;"></div>
     </div>
+  </div>
+
+</div><!-- end app-body -->
+
+<!-- BOTTOM NAV -->
+<div class="bot-nav">
+  <div class="bot-left">
+    <button class="nav-btn btn-menu" onclick="toggleNav()">☰ CLASES</button>
+    <button class="nav-btn btn-prev" id="btnP" onclick="nav(-1)">← ANTERIOR</button>
+  </div>
+  <span class="s-count" id="sCnt">— / 8</span>
+  <div class="bot-right">
+    <button class="nav-btn btn-term" onclick="openTerminal()">▶ VER SALIDA</button>
+    <button class="nav-btn btn-next" id="btnN" onclick="nav(1)">SIGUIENTE →</button>
   </div>
 </div>
 
-<div class="bot-nav">
-  <button class="nav-btn btn-prev" id="btnP" onclick="nav(-1)">← ANTERIOR</button>
-  <span class="scount" id="sCnt">— / 8</span>
-  <button class="nav-btn btn-next" id="btnN" onclick="nav(1)">SIGUIENTE →</button>
+<!-- TERMINAL MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeTermOnBg(event)">
+  <div class="terminal">
+    <div class="term-bar">
+      <div class="term-title">⚡ CONSOLA DE SALIDA</div>
+      <div class="term-controls">
+        <button class="term-btn tbtn-all" onclick="showAllOutput()">SALIDA COMPLETA</button>
+        <button class="term-btn tbtn-close" onclick="closeTerminal()">✕ CERRAR</button>
+      </div>
+    </div>
+    <div class="term-body" id="termBody"></div>
+  </div>
 </div>
 
 <script>
-const S = [
+/* =========================================================
+   DATA
+   ========================================================= */
+const SECTIONS = [
   {
-    label:'Main', sub:'Punto de entrada del programa', tag:'t-mai', tl:'EJECUCIÓN', file:'Main.java',
-    concept:'EJECUCIÓN', cDesc:'El método main() orquesta todo el sistema: crea los objetos, aplica la composición (setSilabo), ejecuta las matrículas vía ServicioMatricula (dependencia), agrega el docente (agregación), llama a la interfaz (evaluar/publicarNotas) y muestra resultados usando polimorfismo (calcularCarga).',
+    label:'Main', sub:'Punto de entrada', tag:'t-mai', tl:'EJECUCIÓN', file:'Main.java',
+    concept:'EJECUCIÓN', cDesc:'main() orquesta todo: crea objetos, aplica composición, ejecuta matrículas (dependencia), agrega el docente (agregación), llama a la interfaz y muestra resultados con polimorfismo.',
     objs:['est1','est2','est3','doc1','sil','curso1'],
     outs:[
-      {t:'Matriculando estudiante Juan Perez en curso Biologia',c:''},
-      {t:'Matriculando estudiante Maria en curso Biologia',c:''},
-      {t:'Matriculando estudiante Jose en curso Biologia',c:''},
-      {t:'Docente Carlos está evaluando el examen final.',c:'sys'},
-      {t:'Docente Carlos ha publicado las notas en el sistema.',c:'sys'},
-      {t:'INFORMACION DEL CURSO',c:'hdr'},
-      {t:'Curso: Biologia',c:'inf'},
-      {t:'Carga Estudiante 1: 12.0 horas',c:'inf'},
-      {t:'Carga Docente: 20.0 horas',c:'inf'},
-      {t:'Silabo: Plan de estudios Biologia',c:'inf'},
-      {t:'Total miembros: 4',c:'inf'},
-      {t:'Carga Estudiante 2: 15.0 horas',c:'inf'},
-      {t:'Carga Estudiante 3: 18.0 horas',c:'inf'},
+      {t:'$ javac *.java && java Main', c:'dim'},
+      {t:'', c:'empty'},
+      {t:'Matriculando estudiante Juan Perez en curso Biologia', c:''},
+      {t:'Matriculando estudiante Maria en curso Biologia', c:''},
+      {t:'Matriculando estudiante Jose en curso Biologia', c:''},
+      {t:'Docente Carlos está evaluando el examen final.', c:'sys'},
+      {t:'Docente Carlos ha publicado las notas en el sistema.', c:'sys'},
+      {t:'', c:'empty'},
+      {t:'INFORMACION DEL CURSO', c:'hdr'},
+      {t:'Curso: Biologia', c:'inf'},
+      {t:'Carga Estudiante 1: 12.0 horas', c:'inf'},
+      {t:'Carga Docente: 20.0 horas', c:'inf'},
+      {t:'Silabo: Plan de estudios Biologia', c:'inf'},
+      {t:'Total miembros: 4', c:'inf'},
+      {t:'', c:'empty'},
+      {t:'Carga Estudiante 2: 15.0 horas', c:'inf'},
+      {t:'Carga Docente: 20.0 horas', c:'inf'},
+      {t:'Silabo: Plan de estudios Biologia', c:'inf'},
+      {t:'Total miembros: 4', c:'inf'},
+      {t:'', c:'empty'},
+      {t:'Carga Estudiante 3: 18.0 horas', c:'inf'},
+      {t:'Carga Docente: 20.0 horas', c:'inf'},
+      {t:'Silabo: Plan de estudios Biologia', c:'inf'},
+      {t:'Total miembros: 4', c:'inf'},
     ],
     code:`<span class="cm">/**
  * Sistema de Gestión Académica - Universidad Pública de Lima
@@ -201,97 +520,92 @@ const S = [
     curso1.<span class="fn">setSilabo</span>(silabo1);  <span class="cm">// ◆ COMPOSICIÓN Curso → Silabo</span>
 
     <span class="cm">// ── VALIDACIÓN MATRÍCULA (DEPENDENCIA) ─────────────</span>
-    <span class="cm">// ServicioMatricula usa Estudiante y Curso como parámetros</span>
     <span class="cl">ServicioMatricula</span> servicio = <span class="kw">new</span> <span class="cl">ServicioMatricula</span>();
     servicio.<span class="fn">registrarInscripcion</span>(est1, curso1);  <span class="cm">// ↔ Asociación</span>
     servicio.<span class="fn">registrarInscripcion</span>(est2, curso1);
     servicio.<span class="fn">registrarInscripcion</span>(est3, curso1);
-
-    curso1.<span class="fn">agregarMiembro</span>(doc1);  <span class="cm">// ◇ AGREGACIÓN Curso ↔ Docente</span>
+    curso1.<span class="fn">agregarMiembro</span>(doc1);   <span class="cm">// ◇ AGREGACIÓN</span>
 
     <span class="cm">// ── INTERFAZ: Docente implementa Evaluador ──────────</span>
     doc1.<span class="fn">evaluar</span>();
     doc1.<span class="fn">publicarNotas</span>();
 
-    <span class="cm">// ── MOSTRAR INFORMACIÓN — POLIMORFISMO ──────────────</span>
-    <span class="cl">System</span>.out.<span class="fn">println</span>(<span class="st">"INFORMACION DEL CURSO"</span>);
-    <span class="cl">System</span>.out.<span class="fn">println</span>(<span class="st">"Curso: "</span>           + curso1.<span class="fn">getNombreCurso</span>());
-    <span class="cl">System</span>.out.<span class="fn">println</span>(<span class="st">"Carga Estudiante 1: "</span> + est1.<span class="fn">calcularCarga</span>() + <span class="st">" horas"</span>); <span class="cm">// 12.0</span>
-    <span class="cl">System</span>.out.<span class="fn">println</span>(<span class="st">"Carga Docente: "</span>     + doc1.<span class="fn">calcularCarga</span>() + <span class="st">" horas"</span>); <span class="cm">// 20.0</span>
-    <span class="cl">System</span>.out.<span class="fn">println</span>(<span class="st">"Silabo: "</span>            + curso1.<span class="fn">getSilabo</span>().<span class="fn">getContenido</span>());
-    <span class="cl">System</span>.out.<span class="fn">println</span>(<span class="st">"Total miembros: "</span>    + <span class="fn">contarMiembrosNoNulos</span>(curso1.<span class="fn">getMiembros</span>()));
-
-    <span class="cl">System</span>.out.<span class="fn">println</span>(<span class="st">"Carga Estudiante 2: "</span> + est2.<span class="fn">calcularCarga</span>() + <span class="st">" horas"</span>); <span class="cm">// 15.0</span>
-    <span class="cl">System</span>.out.<span class="fn">println</span>(<span class="st">"Carga Estudiante 3: "</span> + est3.<span class="fn">calcularCarga</span>() + <span class="st">" horas"</span>); <span class="cm">// 18.0</span>
+    <span class="cm">// ── POLIMORFISMO: mismo método, distinto resultado ──</span>
+    <span class="cl">System</span>.out.<span class="fn">println</span>(<span class="st">"Carga Est1: "</span> + est1.<span class="fn">calcularCarga</span>() + <span class="st">" horas"</span>); <span class="cm">// 12.0</span>
+    <span class="cl">System</span>.out.<span class="fn">println</span>(<span class="st">"Carga Est2: "</span> + est2.<span class="fn">calcularCarga</span>() + <span class="st">" horas"</span>); <span class="cm">// 15.0</span>
+    <span class="cl">System</span>.out.<span class="fn">println</span>(<span class="st">"Carga Est3: "</span> + est3.<span class="fn">calcularCarga</span>() + <span class="st">" horas"</span>); <span class="cm">// 18.0</span>
+    <span class="cl">System</span>.out.<span class="fn">println</span>(<span class="st">"Carga Doc:  "</span> + doc1.<span class="fn">calcularCarga</span>() + <span class="st">" horas"</span>); <span class="cm">// 20.0</span>
   }
 
-  <span class="cm">// Cuenta posiciones no nulas del vector</span>
-  <span class="kw">public static int</span> <span class="fn">contarMiembrosNoNulos</span>(<span class="abs">MiembroUniversitario</span>[] miembros) {
+  <span class="kw">public static int</span> <span class="fn">contarMiembrosNoNulos</span>(<span class="abs">MiembroUniversitario</span>[] m) {
     <span class="kw">int</span> count = <span class="nm">0</span>;
-    <span class="kw">for</span> (<span class="abs">MiembroUniversitario</span> m : miembros) {
-      <span class="kw">if</span> (m != <span class="kw">null</span>) count++;
-    }
-    <span class="kw">return</span> count;  <span class="cm">// → 4  (3 estudiantes + 1 docente)</span>
+    <span class="kw">for</span> (<span class="abs">MiembroUniversitario</span> x : m) <span class="kw">if</span> (x != <span class="kw">null</span>) count++;
+    <span class="kw">return</span> count;  <span class="cm">// → 4</span>
   }
 }`
   },
   {
     label:'MiembroUniversitario', sub:'Clase abstracta madre', tag:'t-abs', tl:'ABSTRACCIÓN', file:'MiembroUniversitario.java',
-    concept:'ABSTRACCIÓN', cDesc:'Clase abstracta: NO se puede instanciar directamente con new. Define los atributos comunes (codigo, nombre) con encapsulamiento privado y declara calcularCarga() abstracto, obligando a cada subclase a implementarlo de forma diferente (polimorfismo).',
-    objs:[], outs:[],
-    code:`<span class="cm">// CLASE ABSTRACTA MADRE — base de toda la herencia</span>
+    concept:'ABSTRACCIÓN', cDesc:'Clase abstracta: NO se puede instanciar con new. Define atributos comunes con encapsulamiento privado y declara calcularCarga() sin cuerpo, forzando a cada subclase a implementarlo de forma distinta (polimorfismo).',
+    objs:[], outs:[
+      {t:'// No genera salida directa.', c:'dim'},
+      {t:'// Es la BASE que Estudiante y Docente heredan.', c:'dim'},
+      {t:'', c:'empty'},
+      {t:'// Intento inválido:', c:'dim'},
+      {t:'// new MiembroUniversitario(...)  ← ERROR de compilación', c:'dim'},
+    ],
+    code:`<span class="cm">// CLASE ABSTRACTA MADRE — base de la herencia</span>
 <span class="kw">abstract class</span> <span class="abs">MiembroUniversitario</span> {
 
-  <span class="cm">// Atributos PRIVADOS — encapsulamiento total</span>
+  <span class="cm">// Atributos PRIVADOS — encapsulamiento</span>
   <span class="kw">private</span> <span class="cl">String</span> codigo;
   <span class="kw">private</span> <span class="cl">String</span> nombre;
 
-  <span class="cm">// ── Constructor vacío ────────────────────────────────</span>
+  <span class="cm">// Constructor vacío</span>
   <span class="kw">public</span> <span class="fn">MiembroUniversitario</span>() {}
 
-  <span class="cm">// ── Constructor completo ─────────────────────────────</span>
+  <span class="cm">// Constructor completo</span>
   <span class="kw">public</span> <span class="fn">MiembroUniversitario</span>(<span class="cl">String</span> codigo, <span class="cl">String</span> nombre) {
     <span class="kw">this</span>.codigo = codigo;
     <span class="kw">this</span>.nombre = nombre;
   }
 
-  <span class="cm">// ── GETTERS Y SETTERS ────────────────────────────────</span>
-  <span class="kw">public</span> <span class="cl">String</span> <span class="fn">getCodigo</span>()              { <span class="kw">return</span> codigo; }
-  <span class="kw">public void</span>   <span class="fn">setCodigo</span>(<span class="cl">String</span> codigo)  { <span class="kw">this</span>.codigo = codigo; }
-  <span class="kw">public</span> <span class="cl">String</span> <span class="fn">getNombre</span>()              { <span class="kw">return</span> nombre; }
-  <span class="kw">public void</span>   <span class="fn">setNombre</span>(<span class="cl">String</span> nombre)  { <span class="kw">this</span>.nombre = nombre; }
+  <span class="cm">// GETTERS Y SETTERS</span>
+  <span class="kw">public</span> <span class="cl">String</span> <span class="fn">getCodigo</span>()               { <span class="kw">return</span> codigo; }
+  <span class="kw">public void</span>   <span class="fn">setCodigo</span>(<span class="cl">String</span> codigo)   { <span class="kw">this</span>.codigo = codigo; }
+  <span class="kw">public</span> <span class="cl">String</span> <span class="fn">getNombre</span>()               { <span class="kw">return</span> nombre; }
+  <span class="kw">public void</span>   <span class="fn">setNombre</span>(<span class="cl">String</span> nombre)   { <span class="kw">this</span>.nombre = nombre; }
 
-  <span class="cm">// ── MÉTODO ABSTRACTO ─────────────────────────────────</span>
-  <span class="cm">// Sin cuerpo — cada subclase DEBE implementarlo</span>
-  <span class="cm">// Esto es POLIMORFISMO: mismo nombre, diferente resultado</span>
+  <span class="cm">// MÉTODO ABSTRACTO — sin cuerpo, cada subclase lo implementa</span>
+  <span class="cm">// Este es el POLIMORFISMO: mismo nombre, diferente resultado</span>
   <span class="kw">public abstract double</span> <span class="fn">calcularCarga</span>();
 
   <span class="cm">/*
-   ¿Quiénes la heredan?
+   Herencia:
      Estudiante extends MiembroUniversitario
      Docente    extends MiembroUniversitario
 
-   Ambas heredan sin redeclarar:
-     → codigo, nombre
-     → getCodigo(), setCodigo(), getNombre(), setNombre()
-
-   Ambas DEBEN implementar:
-     → calcularCarga()  (de manera diferente)
-
-   No se puede hacer:
-     new MiembroUniversitario(...)  ← ERROR de compilación
+   Ambas heredan: codigo, nombre, getCodigo(), getNombre()
+   Ambas DEBEN implementar: calcularCarga()
+   No se puede: new MiembroUniversitario(...) ← ERROR
   */</span>
 }`
   },
   {
     label:'Estudiante', sub:'Herencia de MiembroUniversitario', tag:'t-her', tl:'HERENCIA', file:'Estudiante.java',
-    concept:'HERENCIA', cDesc:'Estudiante hereda de MiembroUniversitario con extends. Recibe codigo y nombre automáticamente. Agrega sus propios atributos: promedio y creditosInscritos. Implementa calcularCarga() retornando créditos × 3 horas. El constructor llama a super() para inicializar la clase madre.',
+    concept:'HERENCIA', cDesc:'Estudiante hereda de MiembroUniversitario con extends. Recibe codigo y nombre automáticamente. Agrega promedio y creditosInscritos propios. Implementa calcularCarga() con lógica propia: créditos × 3 horas/semana.',
     objs:['est1','est2','est3'],
     outs:[
-      {t:'— Polimorfismo aplicado a Estudiante —',c:'hdr'},
-      {t:'est1.calcularCarga()  →  4 × 3.0 = 12.0 h  (luego de sumar +3 en matrícula)',c:'inf'},
-      {t:'est2.calcularCarga()  →  5 × 3.0 = 15.0 h',c:'inf'},
-      {t:'est3.calcularCarga()  →  6 × 3.0 = 18.0 h',c:'inf'},
+      {t:'// POLIMORFISMO en Estudiante:', c:'hdr'},
+      {t:'', c:'empty'},
+      {t:'est1.calcularCarga()  →  4 × 3.0 = 12.0 horas', c:'inf'},
+      {t:'  (creditosInscritos inicial:1  +3 matrícula = 4)', c:'dim'},
+      {t:'', c:'empty'},
+      {t:'est2.calcularCarga()  →  5 × 3.0 = 15.0 horas', c:'inf'},
+      {t:'  (creditosInscritos inicial:2  +3 matrícula = 5)', c:'dim'},
+      {t:'', c:'empty'},
+      {t:'est3.calcularCarga()  →  6 × 3.0 = 18.0 horas', c:'inf'},
+      {t:'  (creditosInscritos inicial:3  +3 matrícula = 6)', c:'dim'},
     ],
     code:`<span class="cm">// ESTUDIANTE — hereda de MiembroUniversitario</span>
 <span class="kw">class</span> <span class="cl">Estudiante</span> <span class="kw">extends</span> <span class="abs">MiembroUniversitario</span> {
@@ -300,48 +614,54 @@ const S = [
   <span class="kw">private double</span> promedio;
   <span class="kw">private int</span>    creditosInscritos;
 
-  <span class="cm">// ── Constructor vacío ────────────────────────────────</span>
+  <span class="cm">// Constructor vacío</span>
   <span class="kw">public</span> <span class="fn">Estudiante</span>() {}
 
-  <span class="cm">// ── Constructor completo ─────────────────────────────</span>
+  <span class="cm">// Constructor completo</span>
   <span class="kw">public</span> <span class="fn">Estudiante</span>(<span class="cl">String</span> codigo, <span class="cl">String</span> nombre,
                      <span class="kw">double</span> promedio, <span class="kw">int</span> creditosInscritos) {
-    <span class="kw">super</span>(codigo, nombre);       <span class="cm">// ← inicializa la clase madre</span>
+    <span class="kw">super</span>(codigo, nombre);        <span class="cm">// ← inicializa la clase madre</span>
     <span class="kw">this</span>.promedio          = promedio;
     <span class="kw">this</span>.creditosInscritos = creditosInscritos;
   }
 
-  <span class="cm">// ── GETTERS Y SETTERS específicos ────────────────────</span>
-  <span class="kw">public double</span> <span class="fn">getPromedio</span>()                    { <span class="kw">return</span> promedio; }
-  <span class="kw">public void</span>   <span class="fn">setPromedio</span>(<span class="kw">double</span> promedio)       { <span class="kw">this</span>.promedio = promedio; }
-  <span class="kw">public int</span>    <span class="fn">getCreditosInscritos</span>()              { <span class="kw">return</span> creditosInscritos; }
-  <span class="kw">public void</span>   <span class="fn">setCreditosInscritos</span>(<span class="kw">int</span> creditos)  {
-    <span class="kw">this</span>.creditosInscritos = creditos;
-  }
+  <span class="cm">// GETTERS Y SETTERS específicos</span>
+  <span class="kw">public double</span> <span class="fn">getPromedio</span>()                   { <span class="kw">return</span> promedio; }
+  <span class="kw">public void</span>   <span class="fn">setPromedio</span>(<span class="kw">double</span> p)             { <span class="kw">this</span>.promedio = p; }
+  <span class="kw">public int</span>    <span class="fn">getCreditosInscritos</span>()             { <span class="kw">return</span> creditosInscritos; }
+  <span class="kw">public void</span>   <span class="fn">setCreditosInscritos</span>(<span class="kw">int</span> c)        { <span class="kw">this</span>.creditosInscritos = c; }
 
-  <span class="cm">// ── SOBREESCRITURA del método abstracto — POLIMORFISMO</span>
+  <span class="cm">// SOBREESCRITURA del método abstracto — POLIMORFISMO</span>
   <span class="kw">public double</span> <span class="fn">calcularCarga</span>() {
     <span class="kw">return</span> creditosInscritos * <span class="nm">3.0</span>;  <span class="cm">// 3 horas por crédito</span>
   }
 
   <span class="cm">/*
-   Objetos creados en Main:
    est1 = new Estudiante("333","Juan Perez",15.5, 1)
-          → creditosInscritos: 1 → (+3 matrícula) = 4
-          → calcularCarga(): 4 × 3.0 = 12.0 horas
+     → creditosInscritos: 1 → (+3 matrícula) = 4
+     → calcularCarga(): 4 × 3.0 = 12.0 horas
 
    est2 = new Estudiante("666","Maria",16.2, 2)
-          → creditosInscritos: 2 → 5  →  15.0 horas
+     → creditosInscritos: 2 → 5  →  15.0 horas
 
    est3 = new Estudiante("444","Jose",17.2, 3)
-          → creditosInscritos: 3 → 6  →  18.0 horas
+     → creditosInscritos: 3 → 6  →  18.0 horas
   */</span>
 }`
   },
   {
     label:'Interfaz Evaluador', sub:'Contrato que Docente cumple', tag:'t-int', tl:'INTERFAZ', file:'Evaluador.java',
-    concept:'INTERFAZ', cDesc:'Una interfaz declara métodos SIN implementación. Es un contrato: toda clase que haga implements ESTÁ OBLIGADA a definir todos sus métodos. Si Docente no los implementara, el compilador lanzaría un error. Esto garantiza un comportamiento mínimo esperado.',
-    objs:['doc1'], outs:[],
+    concept:'INTERFAZ', cDesc:'Una interfaz declara métodos SIN implementación. Es un contrato: toda clase que haga implements está OBLIGADA a definir todos sus métodos bajo pena de error de compilación. Garantiza un comportamiento mínimo esperado.',
+    objs:['doc1'], outs:[
+      {t:'// La interfaz no genera salida directa.', c:'dim'},
+      {t:'// Garantiza que Docente SIEMPRE tendrá:', c:'dim'},
+      {t:'', c:'empty'},
+      {t:'doc1.evaluar()', c:'hdr'},
+      {t:'→ Docente Carlos está evaluando el examen final.', c:'sys'},
+      {t:'', c:'empty'},
+      {t:'doc1.publicarNotas()', c:'hdr'},
+      {t:'→ Docente Carlos ha publicado las notas en el sistema.', c:'sys'},
+    ],
     code:`<span class="cm">// INTERFAZ EVALUADOR
 // Define el contrato que Docente debe cumplir</span>
 <span class="kw">interface</span> <span class="iface">Evaluador</span> {
@@ -351,38 +671,43 @@ const S = [
   <span class="kw">void</span> <span class="fn">publicarNotas</span>();  <span class="cm">// Publicar calificaciones</span>
 
   <span class="cm">/*
-   ¿Quién implementa esta interfaz?
+   ¿Quién la implementa?
      class Docente extends MiembroUniversitario
                    implements Evaluador ← aquí
 
-   ¿Qué garantiza al compilador?
-     Que Docente SIEMPRE tendrá definidos:
-       → evaluar()        ✔
-       → publicarNotas()  ✔
+   ¿Qué garantiza?
+     Que Docente SIEMPRE tendrá:
+       → evaluar()        ✔  implementado
+       → publicarNotas()  ✔  implementado
 
    Si Docente NO los implementara:
-     → ERROR: Docente is not abstract and does not
-       override abstract method evaluar() in Evaluador
+     ERROR: Docente is not abstract and does not
+     override abstract method evaluar() in Evaluador
 
-   Uso en Main.java:
+   Uso en Main:
      doc1.evaluar();
-       → "Docente Carlos está evaluando el examen final."
-
+       → "Docente Carlos está evaluando..."
      doc1.publicarNotas();
-       → "Docente Carlos ha publicado las notas en el sistema."
+       → "Docente Carlos ha publicado..."
   */</span>
 }`
   },
   {
     label:'Docente', sub:'Herencia + Interfaz completa', tag:'t-her', tl:'HERENCIA + INTERFAZ', file:'Docente.java',
-    concept:'HERENCIA + INTERFAZ', cDesc:'Docente combina herencia e interfaz. Hereda de MiembroUniversitario (codigo, nombre) con extends, e implementa Evaluador con implements. Además sobreescribe calcularCarga() con carga fija de 20h. Es la clase más completa del sistema.',
+    concept:'HERENCIA + INTERFAZ', cDesc:'Docente combina herencia e interfaz: hereda de MiembroUniversitario (codigo, nombre) e implementa Evaluador (evaluar, publicarNotas). Además sobreescribe calcularCarga() con carga fija de 20h semanales. Es la clase más completa del sistema.',
     objs:['doc1'],
     outs:[
-      {t:'doc1.evaluar()',c:'hdr'},
-      {t:'→ Docente Carlos está evaluando el examen final.',c:'sys'},
-      {t:'doc1.publicarNotas()',c:'hdr'},
-      {t:'→ Docente Carlos ha publicado las notas en el sistema.',c:'sys'},
-      {t:'doc1.calcularCarga()  →  20.0 horas  (fijo, sin importar créditos)',c:'inf'},
+      {t:'doc1.evaluar()', c:'hdr'},
+      {t:'→ Docente Carlos está evaluando el examen final.', c:'sys'},
+      {t:'', c:'empty'},
+      {t:'doc1.publicarNotas()', c:'hdr'},
+      {t:'→ Docente Carlos ha publicado las notas en el sistema.', c:'sys'},
+      {t:'', c:'empty'},
+      {t:'doc1.calcularCarga()  →  20.0 horas', c:'inf'},
+      {t:'  (valor fijo — no depende de créditos)', c:'dim'},
+      {t:'', c:'empty'},
+      {t:'doc1.getSalario()     →  4500.0', c:'inf'},
+      {t:'doc1.getCategoria()   →  "Principal"', c:'inf'},
     ],
     code:`<span class="cm">// DOCENTE — herencia + implementación de interfaz</span>
 <span class="kw">class</span> <span class="cl">Docente</span> <span class="kw">extends</span> <span class="abs">MiembroUniversitario</span>
@@ -392,10 +717,10 @@ const S = [
   <span class="kw">private double</span> salario;
   <span class="kw">private</span> <span class="cl">String</span> categoria;
 
-  <span class="cm">// ── Constructor vacío ────────────────────────────────</span>
+  <span class="cm">// Constructor vacío</span>
   <span class="kw">public</span> <span class="fn">Docente</span>() {}
 
-  <span class="cm">// ── Constructor completo ─────────────────────────────</span>
+  <span class="cm">// Constructor completo</span>
   <span class="kw">public</span> <span class="fn">Docente</span>(<span class="cl">String</span> codigo, <span class="cl">String</span> nombre,
                   <span class="kw">double</span> salario, <span class="cl">String</span> categoria) {
     <span class="kw">super</span>(codigo, nombre);  <span class="cm">// ← hereda codigo y nombre</span>
@@ -403,27 +728,24 @@ const S = [
     <span class="kw">this</span>.categoria = categoria;
   }
 
-  <span class="cm">// ── GETTERS Y SETTERS específicos ────────────────────</span>
-  <span class="kw">public double</span> <span class="fn">getSalario</span>()                { <span class="kw">return</span> salario; }
-  <span class="kw">public void</span>   <span class="fn">setSalario</span>(<span class="kw">double</span> salario)   { <span class="kw">this</span>.salario = salario; }
-  <span class="kw">public</span> <span class="cl">String</span> <span class="fn">getCategoria</span>()              { <span class="kw">return</span> categoria; }
-  <span class="kw">public void</span>   <span class="fn">setCategoria</span>(<span class="cl">String</span> cat)     { <span class="kw">this</span>.categoria = cat; }
+  <span class="cm">// GETTERS Y SETTERS específicos</span>
+  <span class="kw">public double</span> <span class="fn">getSalario</span>()              { <span class="kw">return</span> salario; }
+  <span class="kw">public void</span>   <span class="fn">setSalario</span>(<span class="kw">double</span> s)       { <span class="kw">this</span>.salario = s; }
+  <span class="kw">public</span> <span class="cl">String</span> <span class="fn">getCategoria</span>()            { <span class="kw">return</span> categoria; }
+  <span class="kw">public void</span>   <span class="fn">setCategoria</span>(<span class="cl">String</span> cat)   { <span class="kw">this</span>.categoria = cat; }
 
-  <span class="cm">// ── SOBREESCRITURA — carga FIJA del docente ───────────</span>
-  <span class="cm">// @Override  (POLIMORFISMO: misma firma, diferente resultado)</span>
+  <span class="cm">// SOBREESCRITURA — carga FIJA semanal (POLIMORFISMO)</span>
   <span class="kw">public double</span> <span class="fn">calcularCarga</span>() {
-    <span class="kw">return</span> <span class="nm">20.0</span>;  <span class="cm">// Horas de dictado fijas semanales</span>
+    <span class="kw">return</span> <span class="nm">20.0</span>;  <span class="cm">// Horas de dictado fijas</span>
   }
 
-  <span class="cm">// ── IMPLEMENTACIÓN INTERFAZ Evaluador ────────────────</span>
-  <span class="cm">// @Override</span>
+  <span class="cm">// IMPLEMENTACIÓN INTERFAZ Evaluador</span>
   <span class="kw">public void</span> <span class="fn">evaluar</span>() {
     <span class="cl">System</span>.out.<span class="fn">println</span>(
       <span class="st">"Docente "</span> + <span class="fn">getNombre</span>() + <span class="st">" está evaluando el examen final."</span>
     );
   }
 
-  <span class="cm">// @Override</span>
   <span class="kw">public void</span> <span class="fn">publicarNotas</span>() {
     <span class="cl">System</span>.out.<span class="fn">println</span>(
       <span class="st">"Docente "</span> + <span class="fn">getNombre</span>() + <span class="st">" ha publicado las notas en el sistema."</span>
@@ -431,34 +753,30 @@ const S = [
   }
 
   <span class="cm">/*
-   Objeto creado en Main:
    doc1 = new Docente("555","Carlos",4500.0,"Principal")
 
    Hereda de MiembroUniversitario:
-     → getCodigo()  → "555"
-     → getNombre()  → "Carlos"
+     getCodigo() → "555"  |  getNombre() → "Carlos"
 
    Propios:
-     → getSalario()   → 4500.0
-     → getCategoria() → "Principal"
+     getSalario()   → 4500.0
+     getCategoria() → "Principal"
 
-   Polimorfismo:
-     → calcularCarga() → 20.0 horas (fijo)
-
-   Interfaz Evaluador:
-     → evaluar()        → imprime mensaje
-     → publicarNotas()  → imprime mensaje
+   Polimorfismo: calcularCarga() → 20.0 h (fijo)
+   Interfaz:     evaluar() / publicarNotas()
   */</span>
 }`
   },
   {
-    label:'Silabo', sub:'Composición con Curso (1:1)', tag:'t-com', tl:'COMPOSICIÓN', file:'Silabo.java',
-    concept:'COMPOSICIÓN', cDesc:'Composición (◆): relación de vida compartida. Silabo NO existe sin Curso. Si el Curso es destruido, el Sílabo también. Se representa como atributo privado dentro de Curso. En Main se asigna con curso1.setSilabo(silabo1).',
+    label:'Silabo', sub:'Composición 1:1 con Curso', tag:'t-com', tl:'COMPOSICIÓN', file:'Silabo.java',
+    concept:'COMPOSICIÓN', cDesc:'Composición (◆): relación de vida compartida. Silabo NO existe sin Curso. Si Curso es destruido, Silabo también. Se representa como atributo privado dentro de Curso y se asigna con setSilabo().',
     objs:['sil','curso1'],
     outs:[
-      {t:'curso1.setSilabo(silabo1)  →  composición establecida',c:'hdr'},
-      {t:'curso1.getSilabo().getContenido()',c:'hdr'},
-      {t:'→ "Plan de estudios Biologia"',c:'inf'},
+      {t:'curso1.setSilabo(silabo1)', c:'hdr'},
+      {t:'  → composición 1:1 establecida', c:'dim'},
+      {t:'', c:'empty'},
+      {t:'curso1.getSilabo().getContenido()', c:'hdr'},
+      {t:'  → "Plan de estudios Biologia"', c:'inf'},
     ],
     code:`<span class="cm">// SILABO — composición 1:1 con Curso</span>
 <span class="kw">class</span> <span class="cl">Silabo</span> {
@@ -467,28 +785,28 @@ const S = [
   <span class="kw">private</span> <span class="cl">String</span> codigoSilabo;
   <span class="kw">private</span> <span class="cl">String</span> contenido;
 
-  <span class="cm">// ── Constructor vacío ────────────────────────────────</span>
+  <span class="cm">// Constructor vacío</span>
   <span class="kw">public</span> <span class="fn">Silabo</span>() {}
 
-  <span class="cm">// ── Constructor completo ─────────────────────────────</span>
+  <span class="cm">// Constructor completo</span>
   <span class="kw">public</span> <span class="fn">Silabo</span>(<span class="cl">String</span> codigoSilabo, <span class="cl">String</span> contenido) {
     <span class="kw">this</span>.codigoSilabo = codigoSilabo;
     <span class="kw">this</span>.contenido    = contenido;
   }
 
-  <span class="cm">// ── GETTERS Y SETTERS ────────────────────────────────</span>
+  <span class="cm">// GETTERS Y SETTERS</span>
   <span class="kw">public</span> <span class="cl">String</span> <span class="fn">getCodigoSilabo</span>()              { <span class="kw">return</span> codigoSilabo; }
-  <span class="kw">public void</span>   <span class="fn">setCodigoSilabo</span>(<span class="cl">String</span> codigo)  { <span class="kw">this</span>.codigoSilabo = codigo; }
-  <span class="kw">public</span> <span class="cl">String</span> <span class="fn">getContenido</span>()                 { <span class="kw">return</span> contenido; }
-  <span class="kw">public void</span>   <span class="fn">setContenido</span>(<span class="cl">String</span> contenido)  { <span class="kw">this</span>.contenido = contenido; }
+  <span class="kw">public void</span>   <span class="fn">setCodigoSilabo</span>(<span class="cl">String</span> c)        { <span class="kw">this</span>.codigoSilabo = c; }
+  <span class="kw">public</span> <span class="cl">String</span> <span class="fn">getContenido</span>()                  { <span class="kw">return</span> contenido; }
+  <span class="kw">public void</span>   <span class="fn">setContenido</span>(<span class="cl">String</span> c)           { <span class="kw">this</span>.contenido = c; }
 
   <span class="cm">/*
    ── COMPOSICIÓN con Curso ────────────────────────────
 
-   En Curso.java hay:
+   En Curso.java:
      private Silabo silabo;  ← atributo de composición ◆
 
-   Características de la composición:
+   Características:
      ✔ Silabo pertenece EXCLUSIVAMENTE a un Curso
      ✔ Si el Curso desaparece, el Silabo también
      ✔ Relación fuerte 1:1
@@ -505,20 +823,21 @@ const S = [
   },
   {
     label:'Curso', sub:'Agregación + Composición', tag:'t-agr', tl:'AGREGACIÓN', file:'Curso.java',
-    concept:'AGREGACIÓN', cDesc:'Curso tiene un vector polimórfico MiembroUniversitario[] que almacena TANTO Estudiantes como Docentes en un único arreglo (agregación ◇). Los miembros existen independientemente del curso. También tiene composición con Silabo (si el Curso muere, el Sílabo también).',
+    concept:'AGREGACIÓN', cDesc:'Curso tiene un vector polimórfico MiembroUniversitario[] que almacena TANTO Estudiantes como Docentes en un único arreglo (agregación ◇). Los miembros existen independientemente del curso. También tiene composición con Silabo (◆).',
     objs:['curso1','est1','est2','est3','doc1'],
     outs:[
-      {t:'— Llenado del vector miembros[] —',c:'hdr'},
-      {t:'agregarMiembro(est1)  →  miembros[0] = Estudiante Juan',c:'inf'},
-      {t:'agregarMiembro(est2)  →  miembros[1] = Estudiante Maria',c:'inf'},
-      {t:'agregarMiembro(est3)  →  miembros[2] = Estudiante Jose',c:'inf'},
-      {t:'agregarMiembro(doc1)  →  miembros[3] = Docente Carlos',c:'inf'},
-      {t:'contarMiembrosNoNulos()  →  4',c:'hdr'},
+      {t:'// Llenado del vector miembros[]:', c:'hdr'},
+      {t:'agregarMiembro(est1)  →  miembros[0] = Juan Perez', c:'inf'},
+      {t:'agregarMiembro(est2)  →  miembros[1] = Maria', c:'inf'},
+      {t:'agregarMiembro(est3)  →  miembros[2] = Jose', c:'inf'},
+      {t:'agregarMiembro(doc1)  →  miembros[3] = Carlos', c:'inf'},
+      {t:'miembros[4..49]       →  null (vacíos)', c:'dim'},
+      {t:'', c:'empty'},
+      {t:'contarMiembrosNoNulos()  →  4', c:'hdr'},
     ],
     code:`<span class="cm">// CURSO — Agregación ◇ + Composición ◆</span>
 <span class="kw">class</span> <span class="cl">Curso</span> {
 
-  <span class="cm">// Atributos privados</span>
   <span class="kw">private</span> <span class="cl">String</span> codigoCurso;
   <span class="kw">private</span> <span class="cl">String</span> nombreCurso;
 
@@ -527,29 +846,29 @@ const S = [
   <span class="cm">// Los miembros existen aunque el Curso desaparezca</span>
   <span class="kw">private</span> <span class="abs">MiembroUniversitario</span>[] miembros;
 
-  <span class="cm">// COMPOSICIÓN ◆ — Silabo vive y muere con Curso</span>
+  <span class="cm">// COMPOSICIÓN ◆ — Silabo vive y muere con el Curso</span>
   <span class="kw">private</span> <span class="cl">Silabo</span> silabo;
 
-  <span class="cm">// ── Constructor vacío ────────────────────────────────</span>
+  <span class="cm">// Constructor vacío</span>
   <span class="kw">public</span> <span class="fn">Curso</span>() {}
 
-  <span class="cm">// ── Constructor con capacidad del vector ─────────────</span>
-  <span class="kw">public</span> <span class="fn">Curso</span>(<span class="cl">String</span> codigoCurso, <span class="cl">String</span> nombreCurso, <span class="kw">int</span> capacidadMiembros) {
+  <span class="cm">// Constructor con capacidad del vector</span>
+  <span class="kw">public</span> <span class="fn">Curso</span>(<span class="cl">String</span> codigoCurso, <span class="cl">String</span> nombreCurso, <span class="kw">int</span> cap) {
     <span class="kw">this</span>.codigoCurso = codigoCurso;
     <span class="kw">this</span>.nombreCurso = nombreCurso;
-    <span class="kw">this</span>.miembros    = <span class="kw">new</span> <span class="abs">MiembroUniversitario</span>[capacidadMiembros]; <span class="cm">// cap: 50</span>
+    <span class="kw">this</span>.miembros    = <span class="kw">new</span> <span class="abs">MiembroUniversitario</span>[cap]; <span class="cm">// cap: 50</span>
   }
 
-  <span class="cm">// ── GETTERS Y SETTERS ────────────────────────────────</span>
-  <span class="kw">public</span> <span class="cl">String</span>              <span class="fn">getCodigoCurso</span>()              { <span class="kw">return</span> codigoCurso; }
-  <span class="kw">public void</span>                <span class="fn">setCodigoCurso</span>(<span class="cl">String</span> c)        { <span class="kw">this</span>.codigoCurso = c; }
-  <span class="kw">public</span> <span class="cl">String</span>              <span class="fn">getNombreCurso</span>()              { <span class="kw">return</span> nombreCurso; }
-  <span class="kw">public void</span>                <span class="fn">setNombreCurso</span>(<span class="cl">String</span> n)        { <span class="kw">this</span>.nombreCurso = n; }
-  <span class="kw">public</span> <span class="abs">MiembroUniversitario</span>[] <span class="fn">getMiembros</span>()            { <span class="kw">return</span> miembros; }
-  <span class="kw">public</span> <span class="cl">Silabo</span>              <span class="fn">getSilabo</span>()                   { <span class="kw">return</span> silabo; }
-  <span class="kw">public void</span>                <span class="fn">setSilabo</span>(<span class="cl">Silabo</span> s)             { <span class="kw">this</span>.silabo = s; }
+  <span class="cm">// GETTERS Y SETTERS</span>
+  <span class="kw">public</span> <span class="cl">String</span>             <span class="fn">getCodigoCurso</span>()             { <span class="kw">return</span> codigoCurso; }
+  <span class="kw">public void</span>               <span class="fn">setCodigoCurso</span>(<span class="cl">String</span> c)      { <span class="kw">this</span>.codigoCurso = c; }
+  <span class="kw">public</span> <span class="cl">String</span>             <span class="fn">getNombreCurso</span>()             { <span class="kw">return</span> nombreCurso; }
+  <span class="kw">public void</span>               <span class="fn">setNombreCurso</span>(<span class="cl">String</span> n)      { <span class="kw">this</span>.nombreCurso = n; }
+  <span class="kw">public</span> <span class="abs">MiembroUniversitario</span>[] <span class="fn">getMiembros</span>()           { <span class="kw">return</span> miembros; }
+  <span class="kw">public</span> <span class="cl">Silabo</span>             <span class="fn">getSilabo</span>()                  { <span class="kw">return</span> silabo; }
+  <span class="kw">public void</span>               <span class="fn">setSilabo</span>(<span class="cl">Silabo</span> s)           { <span class="kw">this</span>.silabo = s; }
 
-  <span class="cm">// ── AGREGA MIEMBRO al vector (AGREGACIÓN) ────────────</span>
+  <span class="cm">// AGREGA MIEMBRO al vector (AGREGACIÓN)</span>
   <span class="kw">public boolean</span> <span class="fn">agregarMiembro</span>(<span class="abs">MiembroUniversitario</span> miembro) {
     <span class="kw">for</span> (<span class="kw">int</span> i = <span class="nm">0</span>; i < miembros.length; i++) {
       <span class="kw">if</span> (miembros[i] == <span class="kw">null</span>) {  <span class="cm">// posición libre</span>
@@ -559,36 +878,24 @@ const S = [
     }
     <span class="kw">return false</span>;  <span class="cm">// vector lleno</span>
   }
-
-  <span class="cm">/*
-   En Main:
-   curso1 = new Curso("222","Biologia",50)
-   → miembros[] tiene capacidad de 50 posiciones
-
-   Después de las matrículas:
-   miembros[0] = est1  (Juan Perez)
-   miembros[1] = est2  (Maria)
-   miembros[2] = est3  (Jose)
-   miembros[3] = doc1  (Carlos)
-   miembros[4..49] = null
-   → contarMiembrosNoNulos() = 4
-  */</span>
 }`
   },
   {
     label:'ServicioMatricula', sub:'Dependencia + Asociación', tag:'t-dep', tl:'DEPENDENCIA', file:'ServicioMatricula.java',
-    concept:'DEPENDENCIA', cDesc:'ServicioMatricula recibe Estudiante y Curso como parámetros de un método, sin guardarlos como atributos propios. Eso es dependencia (···▶): los usa de forma temporal. Al ejecutarse, crea la Asociación Estudiante↔Curso sumando créditos y agregando al vector.',
+    concept:'DEPENDENCIA', cDesc:'ServicioMatricula recibe Estudiante y Curso como parámetros temporales sin guardarlos como atributos (eso es dependencia ···▶). Al ejecutarse, crea la Asociación Estudiante↔Curso: suma 3 créditos y agrega el estudiante al vector del curso.',
     objs:['est1','est2','est3','curso1'],
     outs:[
-      {t:'servicio.registrarInscripcion(est1, curso1)',c:'hdr'},
-      {t:'→ Matriculando estudiante Juan Perez en curso Biologia',c:''},
-      {t:'→ est1.creditosInscritos: 1 + 3 = 4   |   carga: 12.0 h',c:'inf'},
-      {t:'servicio.registrarInscripcion(est2, curso1)',c:'hdr'},
-      {t:'→ Matriculando estudiante Maria en curso Biologia',c:''},
-      {t:'→ est2.creditosInscritos: 2 + 3 = 5   |   carga: 15.0 h',c:'inf'},
-      {t:'servicio.registrarInscripcion(est3, curso1)',c:'hdr'},
-      {t:'→ Matriculando estudiante Jose en curso Biologia',c:''},
-      {t:'→ est3.creditosInscritos: 3 + 3 = 6   |   carga: 18.0 h',c:'inf'},
+      {t:'servicio.registrarInscripcion(est1, curso1)', c:'hdr'},
+      {t:'→ Matriculando estudiante Juan Perez en curso Biologia', c:''},
+      {t:'→ est1.creditosInscritos: 1 + 3 = 4  |  carga: 12.0h', c:'inf'},
+      {t:'', c:'empty'},
+      {t:'servicio.registrarInscripcion(est2, curso1)', c:'hdr'},
+      {t:'→ Matriculando estudiante Maria en curso Biologia', c:''},
+      {t:'→ est2.creditosInscritos: 2 + 3 = 5  |  carga: 15.0h', c:'inf'},
+      {t:'', c:'empty'},
+      {t:'servicio.registrarInscripcion(est3, curso1)', c:'hdr'},
+      {t:'→ Matriculando estudiante Jose en curso Biologia', c:''},
+      {t:'→ est3.creditosInscritos: 3 + 3 = 6  |  carga: 18.0h', c:'inf'},
     ],
     code:`<span class="cm">// SERVICIO MATRÍCULA — Dependencia (···▶)</span>
 <span class="kw">class</span> <span class="cl">ServicioMatricula</span> {
@@ -596,7 +903,6 @@ const S = [
   <span class="cm">// Sin atributos de Estudiante o Curso
   // Los recibe como PARÁMETROS → eso es DEPENDENCIA</span>
 
-  <span class="cm">// Registra matrícula: suma créditos + agrega al vector</span>
   <span class="kw">public void</span> <span class="fn">registrarInscripcion</span>(<span class="cl">Estudiante</span> estudiante, <span class="cl">Curso</span> curso) {
 
     <span class="cm">// Mensaje de confirmación</span>
@@ -605,57 +911,51 @@ const S = [
       <span class="st">" en curso "</span>                + curso.<span class="fn">getNombreCurso</span>()
     );
 
-    <span class="cm">// ASOCIACIÓN Estudiante ↔ Curso</span>
-    <span class="cm">// Actualiza los créditos del estudiante (+3 por matrícula)</span>
+    <span class="cm">// ASOCIACIÓN Estudiante ↔ Curso: actualiza créditos (+3)</span>
     estudiante.<span class="fn">setCreditosInscritos</span>(
       estudiante.<span class="fn">getCreditosInscritos</span>() + <span class="nm">3</span>
     );
 
-    <span class="cm">// AGREGACIÓN: agrega el estudiante al vector del curso</span>
+    <span class="cm">// AGREGACIÓN: agrega estudiante al vector del curso</span>
     curso.<span class="fn">agregarMiembro</span>(estudiante);
   }
 
   <span class="cm">/*
-   Llamadas en Main (3 inscripciones):
+   Diferencia clave:
+     Dependencia  → usa el objeto como parámetro temporal
+     Asociación   → crea relación persistente Estudiante-Curso
 
-   servicio.registrarInscripcion(est1, curso1)
-     est1.creditosInscritos: 1 → 4
-     est1.calcularCarga():   4 × 3.0 = 12.0 horas
-
-   servicio.registrarInscripcion(est2, curso1)
-     est2.creditosInscritos: 2 → 5
-     est2.calcularCarga():   5 × 3.0 = 15.0 horas
-
-   servicio.registrarInscripcion(est3, curso1)
-     est3.creditosInscritos: 3 → 6
-     est3.calcularCarga():   6 × 3.0 = 18.0 horas
-
-   Diferencia Dependencia vs Asociación:
-     Dependencia:  usa el objeto como parámetro temporal
-     Asociación:   crea la relación persistente Estudiante-Curso
+   Resultados tras las 3 llamadas:
+     est1: créditos 1→4  |  calcularCarga(): 12.0h
+     est2: créditos 2→5  |  calcularCarga(): 15.0h
+     est3: créditos 3→6  |  calcularCarga(): 18.0h
   */</span>
 }`
   },
 ];
 
+/* objects definitions */
 const OD = {
-  est1: {type:'Estudiante',name:'est1',attrs:['codigo: <span>333</span>','nombre: <span>Juan Perez</span>','promedio: <span>15.5</span>','créditos: <span>1→4</span>']},
-  est2: {type:'Estudiante',name:'est2',attrs:['codigo: <span>666</span>','nombre: <span>Maria</span>','promedio: <span>16.2</span>','créditos: <span>2→5</span>']},
-  est3: {type:'Estudiante',name:'est3',attrs:['codigo: <span>444</span>','nombre: <span>Jose</span>','promedio: <span>17.2</span>','créditos: <span>3→6</span>']},
-  doc1: {type:'Docente',name:'doc1',attrs:['codigo: <span>555</span>','nombre: <span>Carlos</span>','salario: <span>4500.0</span>','cat: <span>Principal</span>']},
-  sil:  {type:'Silabo',name:'silabo1',attrs:['cod: <span>7771</span>','contenido: <span>Plan Biología</span>']},
-  curso1:{type:'Curso',name:'curso1',attrs:['cod: <span>222</span>','nombre: <span>Biologia</span>','cap: <span>50</span>','miembros: <span>4</span>']},
+  est1:  { type:'Estudiante', name:'est1',    attrs:['codigo: <span>333</span>','nombre: <span>Juan Perez</span>','promedio: <span>15.5</span>','créditos: <span>1→4</span>'] },
+  est2:  { type:'Estudiante', name:'est2',    attrs:['codigo: <span>666</span>','nombre: <span>Maria</span>','promedio: <span>16.2</span>','créditos: <span>2→5</span>'] },
+  est3:  { type:'Estudiante', name:'est3',    attrs:['codigo: <span>444</span>','nombre: <span>Jose</span>','promedio: <span>17.2</span>','créditos: <span>3→6</span>'] },
+  doc1:  { type:'Docente',    name:'doc1',    attrs:['codigo: <span>555</span>','nombre: <span>Carlos</span>','salario: <span>4500.0</span>','cat: <span>Principal</span>'] },
+  sil:   { type:'Silabo',     name:'silabo1', attrs:['cod: <span>7771</span>','contenido: <span>Plan Biología</span>'] },
+  curso1:{ type:'Curso',      name:'curso1',  attrs:['cod: <span>222</span>','nombre: <span>Biologia</span>','cap: <span>50</span>','miembros: <span>4</span>'] },
 };
 
+/* state */
 let cur = -1;
+let lastOuts = [];
 
+/* ─── BUILD ────────────────────────────────────────────── */
 function buildNav() {
   const c = document.getElementById('navItems');
-  S.forEach((s,i) => {
+  SECTIONS.forEach((s, i) => {
     const d = document.createElement('div');
     d.className = 'nav-item';
-    d.id = 'ni'+i;
-    d.onclick = () => goTo(i);
+    d.id = 'ni' + i;
+    d.onclick = () => { goTo(i); closeNav(); };
     d.innerHTML = `<div class="n-num">${i+1}</div><div><div class="n-lbl">${s.label}</div><div class="n-sub">${s.sub}</div><span class="n-tag ${s.tag}">${s.tl}</span></div>`;
     c.appendChild(d);
   });
@@ -663,30 +963,39 @@ function buildNav() {
 
 function buildObjs() {
   const g = document.getElementById('objGrid');
-  Object.entries(OD).forEach(([k,o]) => {
+  Object.entries(OD).forEach(([k, o]) => {
     const d = document.createElement('div');
-    d.className = 'obj-card'; d.id = 'ob'+k;
+    d.className = 'obj-card';
+    d.id = 'ob' + k;
     d.innerHTML = `<div class="o-type">${o.type}</div><div class="o-name">${o.name}</div><div class="o-attr">${o.attrs.join('<br>')}</div>`;
     g.appendChild(d);
   });
 }
 
+/* ─── GO TO ─────────────────────────────────────────────── */
 function goTo(idx) {
   if (idx === cur) return;
   cur = idx;
-  const s = S[idx];
+  const s = SECTIONS[idx];
+  lastOuts = s.outs;
 
-  document.querySelectorAll('.nav-item').forEach((e,i) => e.className = 'nav-item'+(i===idx?' active':''));
-  document.getElementById('ni'+idx).scrollIntoView({block:'nearest',behavior:'smooth'});
+  /* nav highlight */
+  document.querySelectorAll('.nav-item').forEach((e, i) =>
+    e.className = 'nav-item' + (i === idx ? ' active' : ''));
+  document.getElementById('ni' + idx).scrollIntoView({ block:'nearest', behavior:'smooth' });
 
+  /* code */
   document.getElementById('codeDisplay').innerHTML = s.code;
   document.getElementById('panelFile').textContent = s.file;
   document.getElementById('fileLabel').textContent = s.file;
+
+  /* concept */
   document.getElementById('cName').textContent = s.concept;
   document.getElementById('cDesc').textContent = s.cDesc;
 
+  /* objects */
   Object.keys(OD).forEach(k => {
-    const el = document.getElementById('ob'+k);
+    const el = document.getElementById('ob' + k);
     if (!el) return;
     if (s.objs.includes(k)) {
       el.className = 'obj-card alive anim';
@@ -696,31 +1005,103 @@ function goTo(idx) {
     }
   });
 
-  clearOut();
-  s.outs.forEach((o,i) => setTimeout(() => addOut(o.t, o.c), i*200));
+  /* mini output in right panel */
+  const mini = document.getElementById('miniOut');
+  mini.innerHTML = '';
+  s.outs.forEach((o, i) => {
+    setTimeout(() => {
+      if (!o.t) return;
+      const d = document.createElement('div');
+      d.style.cssText = `font-family:'JetBrains Mono',monospace;font-size:.6rem;line-height:1.8;
+        color:${o.c==='hdr'?'var(--cyan)':o.c==='inf'?'var(--yellow)':o.c==='sys'?'var(--purple)':o.c==='dim'?'var(--muted)':'var(--green)'};
+        opacity:0;transition:opacity .2s;`;
+      d.textContent = o.t;
+      mini.appendChild(d);
+      requestAnimationFrame(() => d.style.opacity = '1');
+      mini.scrollTop = mini.scrollHeight;
+    }, i * 150);
+  });
 
-  document.getElementById('sCnt').textContent = `${idx+1} / ${S.length}`;
-  document.getElementById('btnP').style.opacity = idx===0?'0.3':'1';
-  document.getElementById('btnN').style.opacity = idx===S.length-1?'0.3':'1';
+  /* counters / buttons */
+  document.getElementById('sCnt').textContent = `${idx + 1} / ${SECTIONS.length}`;
+  document.getElementById('btnP').style.opacity = idx === 0 ? '0.3' : '1';
+  document.getElementById('btnN').style.opacity = idx === SECTIONS.length - 1 ? '0.3' : '1';
 }
 
 function nav(d) {
   const n = cur + d;
-  if (n >= 0 && n < S.length) goTo(n);
+  if (n >= 0 && n < SECTIONS.length) goTo(n);
 }
 
-function addOut(t, c) {
-  const ct = document.getElementById('outLines');
-  const d = document.createElement('div');
-  d.className = 'out-line '+(c||'');
-  d.textContent = t;
-  ct.appendChild(d);
-  requestAnimationFrame(() => d.classList.add('show'));
-  ct.scrollTop = ct.scrollHeight;
+/* ─── NAV DRAWER (mobile) ───────────────────────────────── */
+function toggleNav() {
+  const p = document.getElementById('navPanel');
+  const ov = document.getElementById('drawerOverlay');
+  const open = p.classList.toggle('open');
+  ov.classList.toggle('open', open);
+}
+function closeNav() {
+  document.getElementById('navPanel').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
 }
 
-function clearOut() { document.getElementById('outLines').innerHTML = ''; }
+/* ─── TERMINAL MODAL ─────────────────────────────────────── */
+function openTerminal() {
+  const modal = document.getElementById('modalOverlay');
+  const body  = document.getElementById('termBody');
+  body.innerHTML = '';
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  /* render current section output */
+  renderTermOutput(lastOuts);
+}
 
+function renderTermOutput(outs) {
+  const body = document.getElementById('termBody');
+  body.innerHTML = '';
+  outs.forEach((o, i) => {
+    setTimeout(() => {
+      const d = document.createElement('div');
+      d.className = 'term-line ' + (o.c || '');
+      if (o.c === 'empty') { d.innerHTML = '&nbsp;'; d.classList.add('show'); }
+      else {
+        d.innerHTML = o.c === 'dim'
+          ? `<span style="color:var(--muted)">${o.t}</span>`
+          : `<span class="term-prompt">$</span>${o.t}`;
+        setTimeout(() => d.classList.add('show'), 30);
+      }
+      body.appendChild(d);
+      body.scrollTop = body.scrollHeight;
+    }, i * 80);
+  });
+}
+
+function showAllOutput() {
+  /* gather ALL outputs from all sections */
+  const allOuts = [];
+  SECTIONS.forEach(s => {
+    allOuts.push({ t: `── ${s.label} ──`, c:'hdr' });
+    s.outs.forEach(o => allOuts.push(o));
+    allOuts.push({ t:'', c:'empty' });
+  });
+  renderTermOutput(allOuts);
+}
+
+function closeTerminal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeTermOnBg(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeTerminal();
+}
+
+/* ESC to close */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeTerminal();
+});
+
+/* ─── INIT ───────────────────────────────────────────────── */
 buildNav();
 buildObjs();
 goTo(0);
